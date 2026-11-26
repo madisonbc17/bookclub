@@ -1,0 +1,27 @@
+:root {
+  --text: #2b2730;
+  --muted: #6b6375;
+  --bg: #fbf8f3;
+  --surface: #ffffff;
+  --border: #e7e1d8;
+  --accent: #7a4fd1;
+  font: 17px/1.5 system-ui, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text: #ece8f1;
+    --muted: #a69fb1;
+    --bg: #17151b;
+    --surface: #211e26;
+    --border: #353040;
+    --accent: #b294ff;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); }
+.container { max-width: 720px; margin: 0 auto; padding: 24px 16px; }
+h1 { margin: 0 0 8px; }
+a { color: var(--accent); }

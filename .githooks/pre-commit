@@ -1,0 +1,17 @@
+#!/bin/bash
+# Git pre-commit hook: block commits containing .env files or likely secrets.
+# Enabled per clone with: git config core.hooksPath .githooks  (npm install does this automatically)
+files=$(git diff --cached --name-only --diff-filter=ACMR)
+added=$(git diff --cached --diff-filter=ACMR -U0 | grep -E '^\+' | grep -vE '^\+\+\+')
+problems=""
+envs=$(echo "$files" | grep -E '(^|/)\.env($|\.)' | grep -vE '\.env\.example$')
+[ -n "$envs" ] && problems+="  - .env file(s) staged: $(echo $envs)"$'\n'
+patterns='eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.|sb_(secret|publishable)_[A-Za-z0-9_-]{10,}|SUPABASE_[A-Z_]*KEY[[:space:]]*[:=][[:space:]]*["'"'"']?[A-Za-z0-9]|postgres(ql)?://[^:/[:space:]]+:[^@[:space:]]+@|-----BEGIN [A-Z ]*PRIVATE KEY-----|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{20,}|sk-ant-[A-Za-z0-9_-]{10,}|re_[A-Za-z0-9]{20,}|(password|passwd|secret|api_?key|token)[[:space:]]*[:=][[:space:]]*["'"'"'][^"'"'"'[:space:]]{8,}'
+hits=$(echo "$added" | grep -Eio "$patterns" | sort -u | sed -E 's/^(.{12}).*/\1…/')
+[ -n "$hits" ] && problems+="  - possible secret(s): $(echo $hits)"$'\n'
+if [ -n "$problems" ]; then
+  echo "🚫 Secret check blocked this commit:"
+  echo "$problems"
+  echo "Remove/unstage them. Secrets belong in .env (local) or GitHub Actions secrets."
+  exit 1
+fi
